@@ -23,17 +23,17 @@
     "node": ">=18"
   },
   "dependencies": {
-    "express": "^4.22.3",
+    "express": "^5.3.0",
     "express-rate-limit": "^8.7.1",
     "helmet": "^8.3.0"
   },
   "devDependencies": {
-    "eslint": "^10.0.1",
+    "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "jest": "^30.5.2",
-    "lint-staged": "^16.2.7",
-    "prettier": "3.8.1",
-    "supertest": "^7.0.0"
+    "lint-staged": "^17.6.0",
+    "prettier": "3.9.10",
+    "supertest": "^7.3.1"
   }
 }
