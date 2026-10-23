@@ -6,22 +6,22 @@
 
 ## 技術棧
 
-| 項目 | 版本 / 說明 |
-|------|------------|
-| Runtime | Node.js >= 18 |
-| 框架 | Express 4.x |
-| 測試 | Jest 29 + Supertest 7 |
-| Lint | ESLint 10（flat config） |
-| 格式化 | Prettier 3 |
-| Git hook | Husky 9 + lint-staged 16 |
-| CI | GitLab CI/CD（`.gitlab-ci.yml`） |
+| 項目     | 版本 / 說明                      |
+| -------- | -------------------------------- |
+| Runtime  | Node.js >= 18                    |
+| 框架     | Express 4.x                      |
+| 測試     | Jest 29 + Supertest 7            |
+| Lint     | ESLint 10（flat config）         |
+| 格式化   | Prettier 3                       |
+| Git hook | Husky 9 + lint-staged 16         |
+| CI       | GitLab CI/CD（`.gitlab-ci.yml`） |
 
 ## 專案結構
 
 ```
 index.js                  # 進入點：載入 app + config，啟動 HTTP server
 app.js                    # Express app 組裝（middleware、router 掛載）
-config/index.js           # 設定（PORT，預設 6000）
+config/index.js           # 設定（PORT，預設 3000）
 routes/
   health.js               # GET /health
   example.js              # GET /api/hello、GET /api/items
@@ -39,11 +39,11 @@ eslint.config.cjs         # ESLint flat config（含 prettier 整合）
 
 ## API 端點
 
-| Method | Path | 說明 |
-|--------|------|------|
-| GET | `/health` | 健康檢查，回傳 `{ status, timestamp }` |
-| GET | `/api/hello?name=X` | 回傳 `{ message: "Hello, X!" }` |
-| GET | `/api/items` | 回傳 hardcoded item 清單 |
+| Method | Path                | 說明                                   |
+| ------ | ------------------- | -------------------------------------- |
+| GET    | `/health`           | 健康檢查，回傳 `{ status, timestamp }` |
+| GET    | `/api/hello?name=X` | 回傳 `{ message: "Hello, X!" }`        |
+| GET    | `/api/items`        | 回傳 hardcoded item 清單               |
 
 ## 如何執行
 
@@ -51,7 +51,7 @@ eslint.config.cjs         # ESLint flat config（含 prettier 整合）
 # 安裝依賴（需 Node.js >= 18）
 npm install
 
-# 啟動服務（預設 port 6000，可用環境變數覆蓋）
+# 啟動服務（預設 port 3000，可用環境變數覆蓋）
 npm start
 # 或
 PORT=3000 npm start
@@ -73,6 +73,7 @@ npm run format:fix
 ## GitLab CI 說明
 
 `.gitlab-ci.yml` 在每次 `push` 時依序執行：
+
 1. `lint` — ESLint 檢查
 2. `format` — Prettier 格式檢查
 3. `test` — Jest 單元測試
@@ -84,9 +85,14 @@ CI 使用 `node:20` image。`create-mr` 階段需要 GitLab CI 環境變數 `GIT
 
 **可跑（本地）**。`npm install && npm start` 即可啟動。
 
+### 安全防護
+
+- `helmet` 安全標頭、關閉 `X-Powered-By`
+- `/api` 每 IP 速率限制（`express-rate-limit`）
+- JSON body 上限 100kb；錯誤回應不外洩 stack trace
+
 ### 已知缺漏
 
-- **無任何測試檔**：`jest.config.js` 指定 `tests/**/*.test.js`，但 repo 中不存在 `tests/` 目錄，`npm test` 會因找不到測試而報錯或空跑。
-- **CI 需要 `GITLAB_TOKEN`**：`create-mr` 階段用到 `${GITLAB_TOKEN}` 環境變數，需在 GitLab CI/CD 變數中手動設定。
-- **無 `.env.example`**：唯一的環境變數 `PORT` 沒有範本文件，但影響極小（有預設值 6000）。
+- **CI 需要 `GITLAB_TOKEN`**：`create-mr` 階段用到 `${GITLAB_TOKEN}` 環境變數，需在 GitLab CI/CD 變數中手動設定，並勾選 **Masked** 與 **Protected**，token scope 只給 `api`。
+- **無 `.env.example`**：環境變數 `PORT`（預設 3000）、`TRUST_PROXY`（在反向代理後面才設，例如 `1`）、`RATE_LIMIT_PER_MINUTE`（`/api` 每 IP 每分鐘上限，預設 100）沒有範本文件。
 - **services 皆為 hardcoded stub**：`exampleService` 回傳靜態資料，不連接任何資料庫或外部服務。
